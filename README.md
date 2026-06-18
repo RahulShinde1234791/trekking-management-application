@@ -1,6 +1,8 @@
 # Trekking Management Application
 
-A Flask-based web application for managing trekking activities involving Admins, Trek Staff, and Trekkers. The system will support trek creation, staff approval, bookings, role-based dashboards, and trekking history tracking.
+A Flask-based web application for managing trekking activities involving Admins, Trek Staff, and Trekkers. This is a MAD1 project for managing trekking activities using Python.
+
+The system will support trek creation, staff approval, bookings, role-based dashboards, and trekking history tracking.
 
 ## Tech Stack
 
