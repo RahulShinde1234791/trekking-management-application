@@ -17,7 +17,11 @@ The system will support trek creation, staff approval, bookings, role-based dash
 
 Milestone 0: GitHub repository setup and initial project files.
 
-Milestone 1: Database models and schema setup in progress.
+Milestone 1: Database models and schema setup complete.
+
+Milestone 2: Authentication and role-based access complete.
+
+Milestone 3: Admin dashboard and management complete.
 
 ## Database Setup
 
@@ -31,3 +35,15 @@ Default development admin:
 
 - Email: `admin@trekking.local`
 - Password: `admin123`
+
+## Current Features
+
+- Trekker registration and login
+- Trek staff registration with admin approval before login
+- Predefined admin login
+- Role-specific dashboards for Admin, Trek Staff, and Trekker
+- Admin counts for treks, users, staff, and bookings
+- Admin trek create, edit, remove, assign staff, and search
+- Admin staff approve, add, blacklist, activate, remove, and search
+- Admin user blacklist, activate, and search
+- Admin booking and trekking history view

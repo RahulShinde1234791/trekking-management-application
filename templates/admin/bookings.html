@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Bookings - Trekking Management{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">All Bookings and Trekking History</h1>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-10">
+        <input class="form-control" name="q" value="{{ query }}" placeholder="Search bookings by ID, user name, or trek name">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100">Search</button>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead><tr><th>ID</th><th>User</th><th>Trek</th><th>Booking Date</th><th>Status</th><th>Payment</th></tr></thead>
+            <tbody>
+            {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.user.name }}</td>
+                    <td>{{ booking.trek.name }}</td>
+                    <td>{{ booking.booking_date }}</td>
+                    <td>{{ booking.status }}</td>
+                    <td>{{ booking.payment_status }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="text-muted">No bookings found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

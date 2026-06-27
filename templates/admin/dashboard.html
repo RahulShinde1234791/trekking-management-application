@@ -3,8 +3,72 @@
 {% block title %}Admin Dashboard - Trekking Management{% endblock %}
 
 {% block content %}
-<div class="p-4 bg-white border rounded">
-    <h1 class="h3">Admin Dashboard</h1>
-    <p class="mb-0">You are logged in as the predefined admin user.</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Admin Dashboard</h1>
+    <a class="btn btn-primary" href="{{ url_for('create_trek') }}">Create Trek</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card"><div class="card-body"><div class="text-muted">Treks</div><div class="fs-3">{{ stats.treks }}</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body"><div class="text-muted">Users</div><div class="fs-3">{{ stats.trekkers }}</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body"><div class="text-muted">Staff</div><div class="fs-3">{{ stats.staff }}</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body"><div class="text-muted">Bookings</div><div class="fs-3">{{ stats.bookings }}</div></div></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">Pending Staff Approvals</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
+                    <tbody>
+                    {% for staff in pending_staff %}
+                        <tr>
+                            <td>{{ staff.name }}</td>
+                            <td>{{ staff.email }}</td>
+                            <td class="text-end">
+                                <form method="post" action="{{ url_for('approve_staff', user_id=staff.id) }}">
+                                    <button class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-muted">No pending staff approvals.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">Recent Bookings</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr><th>User</th><th>Trek</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for booking in recent_bookings %}
+                        <tr>
+                            <td>{{ booking.user.name }}</td>
+                            <td>{{ booking.trek.name }}</td>
+                            <td>{{ booking.status }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-muted">No bookings yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

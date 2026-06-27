@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Staff - Trekking Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Manage Trek Staff</h1>
+    <a class="btn btn-primary" href="{{ url_for('create_staff') }}">Add Staff</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-10">
+        <input class="form-control" name="q" value="{{ query }}" placeholder="Search staff by name, email, or ID">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100">Search</button>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th><th>Approval</th><th>Assigned Treks</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for staff in staff_members %}
+                <tr>
+                    <td>{{ staff.id }}</td>
+                    <td>{{ staff.name }}</td>
+                    <td>{{ staff.email }}</td>
+                    <td>{{ staff.status }}</td>
+                    <td>{{ staff.staff_profile.approval_status if staff.staff_profile else "missing" }}</td>
+                    <td>{{ staff.assigned_treks|length }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            {% if staff.status != "active" or not staff.staff_profile or staff.staff_profile.approval_status != "approved" %}
+                                <form method="post" action="{{ url_for('approve_staff', user_id=staff.id) }}">
+                                    <button class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                            {% endif %}
+                            {% if staff.status == "blacklisted" %}
+                                <form method="post" action="{{ url_for('activate_staff', user_id=staff.id) }}">
+                                    <button class="btn btn-sm btn-outline-success">Activate</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ url_for('blacklist_staff', user_id=staff.id) }}">
+                                    <button class="btn btn-sm btn-outline-warning">Blacklist</button>
+                                </form>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('delete_staff', user_id=staff.id) }}">
+                                <button class="btn btn-sm btn-outline-danger">Remove</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-muted">No staff found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

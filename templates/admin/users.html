@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Trekking Management{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Manage Users</h1>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-10">
+        <input class="form-control" name="q" value="{{ query }}" placeholder="Search users by name, email, or ID">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100">Search</button>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Bookings</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone or "-" }}</td>
+                    <td>{{ user.status }}</td>
+                    <td>{{ user.bookings|length }}</td>
+                    <td>
+                        {% if user.status == "blacklisted" %}
+                            <form method="post" action="{{ url_for('activate_user', user_id=user.id) }}">
+                                <button class="btn btn-sm btn-outline-success">Activate</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ url_for('blacklist_user', user_id=user.id) }}">
+                                <button class="btn btn-sm btn-outline-warning">Blacklist</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-muted">No users found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
