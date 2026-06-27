@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Registration - Trekking Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="h5 mb-0">Register as Trek Staff</h1>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="name">Name</label>
+                            <input class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="email">Email</label>
+                            <input class="form-control" id="email" name="email" type="email" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="phone">Phone</label>
+                            <input class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="experience_years">Experience Years</label>
+                            <input class="form-control" id="experience_years" name="experience_years" type="number" min="0" value="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="contact_details">Contact Details</label>
+                        <input class="form-control" id="contact_details" name="contact_details">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="bio">Bio</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" name="password" type="password" required>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Submit for Approval</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
