@@ -20,6 +20,7 @@
                     <a class="nav-link" href="{{ url_for('admin_bookings') }}">Bookings</a>
                 {% elif current_user.role == "staff" %}
                     <a class="nav-link" href="{{ url_for('staff_dashboard') }}">Dashboard</a>
+                    <a class="nav-link" href="{{ url_for('staff_profile') }}">Profile</a>
                 {% else %}
                     <a class="nav-link" href="{{ url_for('user_dashboard') }}">Dashboard</a>
                 {% endif %}

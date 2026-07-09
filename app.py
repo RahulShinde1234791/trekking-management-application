@@ -409,6 +409,77 @@ def create_app():
         treks = Trek.query.filter_by(assigned_staff_id=staff.id).order_by(Trek.start_date.asc()).all()
         return render_template("staff/dashboard.html", treks=treks)
 
+    @app.route("/staff/profile", methods=["GET", "POST"])
+    @role_required("staff")
+    def staff_profile():
+        staff = get_current_user()
+        if request.method == "POST":
+            staff.name = request.form.get("name", "").strip()
+            staff.phone = request.form.get("phone", "").strip()
+            profile = staff.staff_profile
+            if profile:
+                profile.contact_details = request.form.get("contact_details", "").strip()
+                profile.bio = request.form.get("bio", "").strip()
+                try:
+                    profile.experience_years = max(
+                        0,
+                        int(request.form.get("experience_years", "0") or 0),
+                    )
+                except ValueError:
+                    flash("Experience must be a number.", "danger")
+                    return render_template("staff/profile.html", staff=staff)
+            db.session.commit()
+            flash("Profile updated successfully.", "success")
+            return redirect(url_for("staff_profile"))
+
+        return render_template("staff/profile.html", staff=staff)
+
+    @app.route("/staff/treks/<int:trek_id>")
+    @role_required("staff")
+    def staff_trek_detail(trek_id):
+        trek = get_assigned_trek_or_404(trek_id)
+        return render_template("staff/trek_detail.html", trek=trek)
+
+    @app.route("/staff/treks/<int:trek_id>/update", methods=["POST"])
+    @role_required("staff")
+    def update_staff_trek(trek_id):
+        trek = get_assigned_trek_or_404(trek_id)
+        try:
+            available_slots = int(request.form.get("available_slots", "0"))
+        except ValueError:
+            flash("Available slots must be a number.", "danger")
+            return redirect(url_for("staff_trek_detail", trek_id=trek.id))
+
+        status = request.form.get("status", "").strip()
+        if status not in ["Open", "Closed", "Ongoing", "Completed"]:
+            flash("Staff can update trek status only to Open, Closed, Ongoing, or Completed.", "danger")
+            return redirect(url_for("staff_trek_detail", trek_id=trek.id))
+
+        if available_slots < 0:
+            flash("Available slots cannot be negative.", "danger")
+            return redirect(url_for("staff_trek_detail", trek_id=trek.id))
+
+        trek.available_slots = available_slots
+        trek.status = status
+        db.session.commit()
+        flash("Trek details updated.", "success")
+        return redirect(url_for("staff_trek_detail", trek_id=trek.id))
+
+    @app.route("/staff/bookings/<int:booking_id>/status", methods=["POST"])
+    @role_required("staff")
+    def update_participant_status(booking_id):
+        booking = Booking.query.get_or_404(booking_id)
+        get_assigned_trek_or_404(booking.trek_id)
+        status = request.form.get("status", "").strip()
+        if status not in ["Booked", "Cancelled", "Completed"]:
+            flash("Invalid booking status.", "danger")
+            return redirect(url_for("staff_trek_detail", trek_id=booking.trek_id))
+
+        booking.status = status
+        db.session.commit()
+        flash("Participant status updated.", "success")
+        return redirect(url_for("staff_trek_detail", trek_id=booking.trek_id))
+
     @app.route("/user/dashboard")
     @role_required("trekker")
     def user_dashboard():
@@ -493,6 +564,11 @@ def get_approved_staff():
         .order_by(User.name.asc())
         .all()
     )
+
+
+def get_assigned_trek_or_404(trek_id):
+    staff = get_current_user()
+    return Trek.query.filter_by(id=trek_id, assigned_staff_id=staff.id).first_or_404()
 
 
 def build_trek_from_form(trek):

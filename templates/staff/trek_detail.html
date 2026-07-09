@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Trek - Trekking Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">{{ trek.name }}</h1>
+        <div class="text-muted">{{ trek.location }} · {{ trek.difficulty }} · {{ trek.duration_days }} days</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('staff_dashboard') }}">Back</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">Update Trek</div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('update_staff_trek', trek_id=trek.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="available_slots">Available Slots</label>
+                        <input class="form-control" id="available_slots" name="available_slots" type="number" min="0" value="{{ trek.available_slots }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="status">Trek Status</label>
+                        <select class="form-select" id="status" name="status">
+                            {% for status in ["Open", "Closed", "Ongoing", "Completed"] %}
+                                <option value="{{ status }}" {% if trek.status == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Update Trek</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">Registered Trekkers</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead><tr><th>Name</th><th>Email</th><th>Booking Date</th><th>Status</th><th>Update</th></tr></thead>
+                    <tbody>
+                    {% for booking in trek.bookings %}
+                        <tr>
+                            <td>{{ booking.user.name }}</td>
+                            <td>{{ booking.user.email }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>{{ booking.status }}</td>
+                            <td>
+                                <form class="d-flex gap-2" method="post" action="{{ url_for('update_participant_status', booking_id=booking.id) }}">
+                                    <select class="form-select form-select-sm" name="status">
+                                        {% for status in ["Booked", "Cancelled", "Completed"] %}
+                                            <option value="{{ status }}" {% if booking.status == status %}selected{% endif %}>{{ status }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-primary">Save</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-muted">No trekkers registered for this trek yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
