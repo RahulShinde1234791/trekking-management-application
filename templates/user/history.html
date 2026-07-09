@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Trekking History - Trekking Management{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Your Trekking History</h1>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead><tr><th>Trek</th><th>Location</th><th>Booking Date</th><th>Booking Status</th><th>Trek Status</th><th>Payment</th></tr></thead>
+            <tbody>
+            {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.trek.name }}</td>
+                    <td>{{ booking.trek.location }}</td>
+                    <td>{{ booking.booking_date }}</td>
+                    <td>{{ booking.status }}</td>
+                    <td>{{ booking.trek.status }}</td>
+                    <td>{{ booking.payment_status }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="text-muted">No trekking history yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

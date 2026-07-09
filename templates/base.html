@@ -23,6 +23,9 @@
                     <a class="nav-link" href="{{ url_for('staff_profile') }}">Profile</a>
                 {% else %}
                     <a class="nav-link" href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                    <a class="nav-link" href="{{ url_for('user_treks') }}">Treks</a>
+                    <a class="nav-link" href="{{ url_for('user_history') }}">History</a>
+                    <a class="nav-link" href="{{ url_for('user_profile') }}">Profile</a>
                 {% endif %}
                 <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
             {% else %}

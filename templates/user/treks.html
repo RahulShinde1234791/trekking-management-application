@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Available Treks - Trekking Management{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Available Treks</h1>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+        <select class="form-select" name="difficulty">
+            <option value="">All difficulties</option>
+            {% for option in ["Easy", "Moderate", "Hard"] %}
+                <option value="{{ option }}" {% if difficulty == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <input class="form-control" name="location" value="{{ location }}" placeholder="Filter by location">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100">Search</button>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead><tr><th>Trek</th><th>Location</th><th>Difficulty</th><th>Duration</th><th>Slots</th><th>Start</th><th></th></tr></thead>
+            <tbody>
+            {% for trek in treks %}
+                <tr>
+                    <td>{{ trek.name }}</td>
+                    <td>{{ trek.location }}</td>
+                    <td>{{ trek.difficulty }}</td>
+                    <td>{{ trek.duration_days }} days</td>
+                    <td>{{ trek.available_slots }}</td>
+                    <td>{{ trek.start_date or "-" }}</td>
+                    <td class="text-end">
+                        {% if user_bookings.get(trek.id) %}
+                            <span class="badge text-bg-secondary">Already booked</span>
+                        {% else %}
+                            <form method="post" action="{{ url_for('book_trek', trek_id=trek.id) }}">
+                                <button class="btn btn-sm btn-primary" {% if trek.available_slots <= 0 %}disabled{% endif %}>Book Trek</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-muted">No open treks match your filters.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
