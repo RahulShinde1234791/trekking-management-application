@@ -39,7 +39,7 @@
             <div class="card-header">Registered Trekkers</div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
-                    <thead><tr><th>Name</th><th>Email</th><th>Booking Date</th><th>Status</th><th>Update</th></tr></thead>
+                    <thead><tr><th>Name</th><th>Email</th><th>Booking Date</th><th>Booking Status</th><th>Trek Status</th><th>Update</th></tr></thead>
                     <tbody>
                     {% for booking in trek.bookings %}
                         <tr>
@@ -47,6 +47,7 @@
                             <td>{{ booking.user.email }}</td>
                             <td>{{ booking.booking_date }}</td>
                             <td>{{ booking.status }}</td>
+                            <td>{{ booking.trek.status }}</td>
                             <td>
                                 <form class="d-flex gap-2" method="post" action="{{ url_for('update_participant_status', booking_id=booking.id) }}">
                                     <select class="form-select form-select-sm" name="status">
@@ -59,7 +60,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="5" class="text-muted">No trekkers registered for this trek yet.</td></tr>
+                        <tr><td colspan="6" class="text-muted">No trekkers registered for this trek yet.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

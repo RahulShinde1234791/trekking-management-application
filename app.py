@@ -461,6 +461,8 @@ def create_app():
 
         trek.available_slots = available_slots
         trek.status = status
+        if status == "Completed":
+            complete_booked_participants(trek)
         db.session.commit()
         flash("Trek details updated.", "success")
         return redirect(url_for("staff_trek_detail", trek_id=trek.id))
@@ -475,9 +477,9 @@ def create_app():
             flash("Invalid booking status.", "danger")
             return redirect(url_for("staff_trek_detail", trek_id=booking.trek_id))
 
-        booking.status = status
+        message, category = update_booking_status(booking, status)
         db.session.commit()
-        flash("Participant status updated.", "success")
+        flash(message, category)
         return redirect(url_for("staff_trek_detail", trek_id=booking.trek_id))
 
     @app.route("/user/dashboard")
@@ -575,6 +577,19 @@ def create_app():
         )
         return render_template("user/history.html", bookings=bookings)
 
+    @app.route("/user/bookings/<int:booking_id>/cancel", methods=["POST"])
+    @role_required("trekker")
+    def cancel_booking(booking_id):
+        booking = Booking.query.filter_by(id=booking_id, user_id=get_current_user().id).first_or_404()
+        if booking.status != "Booked":
+            flash("Only booked treks can be cancelled.", "warning")
+            return redirect(url_for("user_history"))
+
+        message, category = update_booking_status(booking, "Cancelled")
+        db.session.commit()
+        flash(message, category)
+        return redirect(url_for("user_history"))
+
     return app
 
 
@@ -656,6 +671,31 @@ def get_approved_staff():
 def get_assigned_trek_or_404(trek_id):
     staff = get_current_user()
     return Trek.query.filter_by(id=trek_id, assigned_staff_id=staff.id).first_or_404()
+
+
+def update_booking_status(booking, new_status):
+    old_status = booking.status
+    if old_status == new_status:
+        return "Booking status unchanged.", "info"
+
+    if new_status == "Booked" and old_status == "Cancelled":
+        if booking.trek.status != "Open":
+            return "Cancelled bookings can be restored only when the trek is Open.", "danger"
+        if booking.trek.available_slots <= 0:
+            return "Cannot restore booking because the trek is full.", "danger"
+        booking.trek.available_slots -= 1
+
+    if new_status == "Cancelled" and old_status == "Booked":
+        booking.trek.available_slots += 1
+
+    booking.status = new_status
+    return "Booking status updated.", "success"
+
+
+def complete_booked_participants(trek):
+    for booking in trek.bookings:
+        if booking.status == "Booked":
+            booking.status = "Completed"
 
 
 def build_trek_from_form(trek):

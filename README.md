@@ -23,6 +23,12 @@ Milestone 2: Authentication and role-based access complete.
 
 Milestone 3: Admin dashboard and management complete.
 
+Milestone 4: Trek staff dashboard and trek management complete.
+
+Milestone 5: User dashboard and trek booking system complete.
+
+Milestone 6: Trek booking history and trek status tracking complete.
+
 ## Database Setup
 
 Run this command to create the SQLite database and pre-create the admin user:
@@ -47,3 +53,13 @@ Default development admin:
 - Admin staff approve, add, blacklist, activate, remove, and search
 - Admin user blacklist, activate, and search
 - Admin booking and trekking history view
+- Staff profile update
+- Staff assigned-trek dashboard with registered trekker counts
+- Staff assigned-trek slot and status updates
+- Staff participant list and participant booking status updates
+- User profile update
+- User trek search and filters by difficulty/location
+- User trek booking with duplicate, full, and closed-trek prevention
+- User booking cancellation and trekking history
+- Slot restoration when bookings are cancelled
+- Booking completion when assigned staff marks a trek completed

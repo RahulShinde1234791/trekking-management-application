@@ -17,19 +17,20 @@
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead><tr><th>ID</th><th>User</th><th>Trek</th><th>Booking Date</th><th>Status</th><th>Payment</th></tr></thead>
+            <thead><tr><th>ID</th><th>User</th><th>Trek</th><th>Trek Status</th><th>Booking Date</th><th>Booking Status</th><th>Payment</th></tr></thead>
             <tbody>
             {% for booking in bookings %}
                 <tr>
                     <td>{{ booking.id }}</td>
                     <td>{{ booking.user.name }}</td>
                     <td>{{ booking.trek.name }}</td>
+                    <td>{{ booking.trek.status }}</td>
                     <td>{{ booking.booking_date }}</td>
                     <td>{{ booking.status }}</td>
                     <td>{{ booking.payment_status }}</td>
                 </tr>
             {% else %}
-                <tr><td colspan="6" class="text-muted">No bookings found.</td></tr>
+                <tr><td colspan="7" class="text-muted">No bookings found.</td></tr>
             {% endfor %}
             </tbody>
         </table>

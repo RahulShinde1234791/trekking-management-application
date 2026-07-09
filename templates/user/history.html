@@ -8,7 +8,7 @@
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead><tr><th>Trek</th><th>Location</th><th>Booking Date</th><th>Booking Status</th><th>Trek Status</th><th>Payment</th></tr></thead>
+            <thead><tr><th>Trek</th><th>Location</th><th>Booking Date</th><th>Booking Status</th><th>Trek Status</th><th>Payment</th><th></th></tr></thead>
             <tbody>
             {% for booking in bookings %}
                 <tr>
@@ -18,9 +18,16 @@
                     <td>{{ booking.status }}</td>
                     <td>{{ booking.trek.status }}</td>
                     <td>{{ booking.payment_status }}</td>
+                    <td class="text-end">
+                        {% if booking.status == "Booked" and booking.trek.status in ["Open", "Closed"] %}
+                            <form method="post" action="{{ url_for('cancel_booking', booking_id=booking.id) }}">
+                                <button class="btn btn-sm btn-outline-warning">Cancel</button>
+                            </form>
+                        {% endif %}
+                    </td>
                 </tr>
             {% else %}
-                <tr><td colspan="6" class="text-muted">No trekking history yet.</td></tr>
+                <tr><td colspan="7" class="text-muted">No trekking history yet.</td></tr>
             {% endfor %}
             </tbody>
         </table>
