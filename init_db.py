@@ -1,12 +1,17 @@
 from werkzeug.security import generate_password_hash
-
+import os
+from dotenv import load_dotenv
 from app import create_app
 from extensions import db
 from models import Booking, StaffProfile, Trek, User
 
+load_dotenv()
 
-ADMIN_EMAIL = "admin@trekking.local"
-ADMIN_PASSWORD = "admin123"
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+if not ADMIN_EMAIL or not ADMIN_PASSWORD:
+    raise RuntimeError("ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env")
 
 
 def initialize_database():

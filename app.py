@@ -10,15 +10,18 @@ from flask import (
     session,
     url_for,
 )
+from dotenv import load_dotenv
+import os
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
 from models import Booking, StaffProfile, Trek, User
 
+load_dotenv()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
-    app.config["SECRET_KEY"] = "dev-secret-key"
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///trekking.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
