@@ -1,5 +1,6 @@
 from datetime import datetime
 from functools import wraps
+from flask_wtf.csrf import CSRFProtect
 
 from flask import (
     Flask,
@@ -14,6 +15,8 @@ from dotenv import load_dotenv
 import os
 from werkzeug.security import check_password_hash, generate_password_hash
 
+csrf = CSRFProtect()
+
 from extensions import db
 from models import Booking, StaffProfile, Trek, User
 
@@ -21,10 +24,12 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
+
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///trekking.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    csrf.init_app(app)
     db.init_app(app)
 
     @app.context_processor
@@ -745,4 +750,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")

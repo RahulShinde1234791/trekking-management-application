@@ -30,10 +30,12 @@
                     <td>
                         {% if user.status == "blacklisted" %}
                             <form method="post" action="{{ url_for('activate_user', user_id=user.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-success">Activate</button>
                             </form>
                         {% else %}
                             <form method="post" action="{{ url_for('blacklist_user', user_id=user.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-warning">Blacklist</button>
                             </form>
                         {% endif %}

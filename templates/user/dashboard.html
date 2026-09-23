@@ -27,6 +27,7 @@
                             <td>{{ trek.available_slots }}</td>
                             <td>
                                 <form method="post" action="{{ url_for('book_trek', trek_id=trek.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-primary" {% if trek.available_slots <= 0 %}disabled{% endif %}>Book</button>
                                 </form>
                             </td>

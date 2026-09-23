@@ -34,19 +34,23 @@
                         <div class="d-flex gap-2">
                             {% if staff.status != "active" or not staff.staff_profile or staff.staff_profile.approval_status != "approved" %}
                                 <form method="post" action="{{ url_for('approve_staff', user_id=staff.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-success">Approve</button>
                                 </form>
                             {% endif %}
                             {% if staff.status == "blacklisted" %}
                                 <form method="post" action="{{ url_for('activate_staff', user_id=staff.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-outline-success">Activate</button>
                                 </form>
                             {% else %}
                                 <form method="post" action="{{ url_for('blacklist_staff', user_id=staff.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-outline-warning">Blacklist</button>
                                 </form>
                             {% endif %}
                             <form method="post" action="{{ url_for('delete_staff', user_id=staff.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-danger">Remove</button>
                             </form>
                         </div>

@@ -21,6 +21,7 @@
                     <td class="text-end">
                         {% if booking.status == "Booked" and booking.trek.status in ["Open", "Closed"] %}
                             <form method="post" action="{{ url_for('cancel_booking', booking_id=booking.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-warning">Cancel</button>
                             </form>
                         {% endif %}
