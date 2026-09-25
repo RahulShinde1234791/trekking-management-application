@@ -54,6 +54,13 @@ from models import Booking, StaffProfile, Trek, User
 
 load_dotenv()
 
+def is_valid_email(email):
+    return re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) is not None
+
+
+def is_valid_phone(phone):
+    return not phone or re.fullmatch(r"[0-9+\-\s()]{7,20}", phone) is not None
+
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
 
