@@ -54,12 +54,15 @@ def is_valid_phone(phone):
 
 load_dotenv()
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
 
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///trekking.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    if test_config is None:
+        app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///trekking.db"
+        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    else:
+        app.config.update(test_config)
 
     csrf.init_app(app)
     db.init_app(app)
@@ -689,6 +692,20 @@ def create_app():
         flash(message, category)
         return redirect(url_for("user_history"))
 
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return render_template("errors/404.html"), 404
+
+
+    @app.errorhandler(403)
+    def access_forbidden(error):
+        return render_template("errors/403.html"), 403
+
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return render_template("errors/500.html"), 500
+
     return app
 
 
@@ -872,17 +889,6 @@ def build_trek_from_form(trek):
 
 app = create_app()
 
-@app.errorhandler(404)
-def page_not_found(error):
-    return render_template("errors/404.html"), 404
-
-@app.errorhandler(403)
-def access_forbidden(error):
-    return render_template("errors/403.html"), 403
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    return render_template("errors/500.html"), 500
 
 if __name__ == "__main__":
     app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
