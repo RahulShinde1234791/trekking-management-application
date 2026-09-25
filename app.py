@@ -31,6 +31,8 @@ from auth.routes import (
     redirect_to_dashboard,
     role_required,
 )
+from admin import admin_bp
+from utils import parse_int
 from flask_wtf.csrf import CSRFProtect
 
 from flask import (
@@ -74,6 +76,7 @@ def create_app(test_config=None):
     csrf.init_app(app)
     db.init_app(app)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(admin_bp)
 
     @app.context_processor
     def inject_current_user():
@@ -85,105 +88,6 @@ def create_app(test_config=None):
             return redirect_to_dashboard(get_current_user())
         return render_template("home.html")
 
-    @app.route("/admin/dashboard")
-    @role_required("admin")
-    def admin_dashboard():
-        stats = {
-            "treks": Trek.query.count(),
-            "trekkers": User.query.filter_by(role="trekker").count(),
-            "staff": User.query.filter_by(role="staff").count(),
-            "bookings": Booking.query.count(),
-        }
-        recent_bookings = Booking.query.order_by(Booking.booking_date.desc()).limit(5).all()
-        pending_staff = (
-            User.query.filter_by(role="staff", status="pending")
-            .order_by(User.created_at.desc())
-            .all()
-        )
-        return render_template(
-            "admin/dashboard.html",
-            stats=stats,
-            recent_bookings=recent_bookings,
-            pending_staff=pending_staff,
-        )
-
-    @app.route("/admin/treks")
-    @role_required("admin")
-    def admin_treks():
-        query = request.args.get("q", "").strip()
-        treks_query = Trek.query
-        if query:
-            treks_query = treks_query.filter(
-                db.or_(
-                    Trek.name.ilike(f"%{query}%"),
-                    Trek.location.ilike(f"%{query}%"),
-                    Trek.id == parse_int(query, fallback=-1),
-                )
-            )
-        treks = treks_query.order_by(Trek.start_date.asc().nullslast(), Trek.name.asc()).all()
-        staff_members = get_approved_staff()
-        return render_template(
-            "admin/treks.html",
-            treks=treks,
-            staff_members=staff_members,
-            query=query,
-        )
-
-    @app.route("/admin/treks/create", methods=["GET", "POST"])
-    @role_required("admin")
-    def create_trek():
-        staff_members = get_approved_staff()
-        if request.method == "POST":
-            trek = build_trek_from_form(Trek())
-            if trek is None:
-                return render_template("admin/trek_form.html", trek=None, staff_members=staff_members)
-            db.session.add(trek)
-            db.session.commit()
-            flash("Trek created successfully.", "success")
-            return redirect(url_for("admin_treks"))
-
-        return render_template("admin/trek_form.html", trek=None, staff_members=staff_members)
-
-    @app.route("/admin/treks/<int:trek_id>/edit", methods=["GET", "POST"])
-    @role_required("admin")
-    def edit_trek(trek_id):
-        trek = Trek.query.get_or_404(trek_id)
-        staff_members = get_approved_staff()
-        if request.method == "POST":
-            updated_trek = build_trek_from_form(trek)
-            if updated_trek is None:
-                return render_template("admin/trek_form.html", trek=trek, staff_members=staff_members)
-            db.session.commit()
-            flash("Trek updated successfully.", "success")
-            return redirect(url_for("admin_treks"))
-
-        return render_template("admin/trek_form.html", trek=trek, staff_members=staff_members)
-
-    @app.route("/admin/treks/<int:trek_id>/delete", methods=["POST"])
-    @role_required("admin")
-    def delete_trek(trek_id):
-        trek = Trek.query.get_or_404(trek_id)
-        db.session.delete(trek)
-        db.session.commit()
-        flash("Trek removed successfully.", "info")
-        return redirect(url_for("admin_treks"))
-
-    @app.route("/admin/treks/<int:trek_id>/assign", methods=["POST"])
-    @role_required("admin")
-    def assign_staff(trek_id):
-        trek = Trek.query.get_or_404(trek_id)
-        staff_id = parse_int(request.form.get("assigned_staff_id"), fallback=None)
-        if staff_id is None:
-            trek.assigned_staff_id = None
-        else:
-            staff = User.query.filter_by(id=staff_id, role="staff", status="active").first()
-            if not staff:
-                flash("Please select an approved staff member.", "danger")
-                return redirect(url_for("admin_treks"))
-            trek.assigned_staff_id = staff.id
-        db.session.commit()
-        flash("Staff assignment updated.", "success")
-        return redirect(url_for("admin_treks"))
 
     @app.route("/admin/staff")
     @role_required("admin")
@@ -570,12 +474,6 @@ def create_app(test_config=None):
         return render_template("errors/500.html"), 500
 
     return app
-
-def parse_int(value, fallback=0):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return fallback
 
 
 def parse_date(value):
