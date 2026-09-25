@@ -1,3 +1,27 @@
+DIFFICULTIES = ("Easy", "Moderate", "Hard")
+
+TREK_STATUSES = (
+    "Pending",
+    "Approved",
+    "Open",
+    "Closed",
+    "Ongoing",
+    "Completed",
+)
+
+STAFF_TREK_STATUSES = (
+    "Open",
+    "Closed",
+    "Ongoing",
+    "Completed",
+)
+
+BOOKING_STATUSES = (
+    "Booked",
+    "Cancelled",
+    "Completed",
+)
+
 from datetime import datetime
 from functools import wraps
 from flask_wtf.csrf import CSRFProtect
@@ -13,12 +37,20 @@ from flask import (
 )
 from dotenv import load_dotenv
 import os
+import re
 from werkzeug.security import check_password_hash, generate_password_hash
 
 csrf = CSRFProtect()
 
 from extensions import db
 from models import Booking, StaffProfile, Trek, User
+
+def is_valid_email(email):
+    return re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) is not None
+
+
+def is_valid_phone(phone):
+    return not phone or re.fullmatch(r"[0-9+\-\s()]{7,20}", phone) is not None
 
 load_dotenv()
 
@@ -54,6 +86,22 @@ def create_app():
                 flash("Name, email, and password are required.", "danger")
                 return render_template("auth/register_user.html")
 
+            if len(name) > 100:
+                flash("Name is too long.", "danger")
+                return render_template("auth/register_user.html")
+
+            if not is_valid_email(email):
+                flash("Please enter a valid email address.", "danger")
+                return render_template("auth/register_user.html")
+
+            if len(password) < 8:
+                flash("Password must be at least 8 characters.", "danger")
+                return render_template("auth/register_user.html")
+
+            if not is_valid_phone(phone):
+                flash("Please enter a valid phone number.", "danger")
+                return render_template("auth/register_user.html")
+
             if User.query.filter_by(email=email).first():
                 flash("An account with this email already exists.", "danger")
                 return render_template("auth/register_user.html")
@@ -87,6 +135,22 @@ def create_app():
 
             if not name or not email or not password:
                 flash("Name, email, and password are required.", "danger")
+                return render_template("auth/register_staff.html")
+
+            if len(name) > 100:
+                flash("Name is too long.", "danger")
+                return render_template("auth/register_staff.html")
+
+            if not is_valid_email(email):
+                flash("Please enter a valid email address.", "danger")
+                return render_template("auth/register_staff.html")
+
+            if len(password) < 8:
+                flash("Password must be at least 8 characters.", "danger")
+                return render_template("auth/register_staff.html")
+
+            if not is_valid_phone(phone):
+                flash("Please enter a valid phone number.", "danger")
                 return render_template("auth/register_staff.html")
 
             if User.query.filter_by(email=email).first():
@@ -422,8 +486,23 @@ def create_app():
     def staff_profile():
         staff = get_current_user()
         if request.method == "POST":
-            staff.name = request.form.get("name", "").strip()
-            staff.phone = request.form.get("phone", "").strip()
+            name = request.form.get("name", "").strip()
+            phone = request.form.get("phone", "").strip()
+
+            if not name:
+                flash("Name is required.", "danger")
+                return render_template("staff/profile.html", staff=staff)
+
+            if len(name) > 100:
+                flash("Name is too long.", "danger")
+                return render_template("staff/profile.html", staff=staff)
+
+            if not is_valid_phone(phone):
+                flash("Please enter a valid phone number.", "danger")
+                return render_template("staff/profile.html", staff=staff)
+
+            staff.name = name
+            staff.phone = phone
             profile = staff.staff_profile
             if profile:
                 profile.contact_details = request.form.get("contact_details", "").strip()
@@ -505,6 +584,18 @@ def create_app():
         if request.method == "POST":
             name = request.form.get("name", "").strip()
             phone = request.form.get("phone", "").strip()
+
+            if not name:
+                flash("Name is required.", "danger")
+                return render_template("user/profile.html", user=user)
+
+            if len(name) > 100:
+                flash("Name is too long.", "danger")
+                return render_template("user/profile.html", user=user)
+
+            if not is_valid_phone(phone):
+                flash("Please enter a valid phone number.", "danger")
+                return render_template("user/profile.html", user=user)
             if not name:
                 flash("Name is required.", "danger")
                 return render_template("user/profile.html", user=user)
@@ -719,8 +810,41 @@ def build_trek_from_form(trek):
     name = request.form.get("name", "").strip()
     location = request.form.get("location", "").strip()
     difficulty = request.form.get("difficulty", "").strip()
+
+    if difficulty not in DIFFICULTIES:
+        flash("Invalid difficulty.", "danger")
+        return None
+
     status = request.form.get("status", "Pending").strip()
-    assigned_staff_id = parse_int(request.form.get("assigned_staff_id"), fallback=None)
+
+    if status not in TREK_STATUSES:
+        flash("Invalid trek status.", "danger")
+        return None
+
+    assigned_staff_raw = request.form.get("assigned_staff_id", "").strip()
+
+    if assigned_staff_raw:
+        try:
+            assigned_staff_id = int(assigned_staff_raw)
+        except ValueError:
+            flash("Invalid staff selection.", "danger")
+            return None
+
+        staff = User.query.filter_by(
+            id=assigned_staff_id,
+            role="staff",
+            status="Active"
+        ).first()
+
+        if (
+            not staff
+            or not staff.staff_profile
+            or staff.staff_profile.approval_status != "Approved"
+        ):
+            flash("Selected staff member is not approved.", "danger")
+            return None
+    else:
+        assigned_staff_id = None
 
     if not name or not location or not difficulty:
         flash("Trek name, location, and difficulty are required.", "danger")
