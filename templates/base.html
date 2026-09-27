@@ -17,7 +17,7 @@
                     <a class="nav-link" href="{{ url_for('admin.admin_treks') }}">Treks</a>
                     <a class="nav-link" href="{{ url_for('admin.admin_staff') }}">Staff</a>
                     <a class="nav-link" href="{{ url_for('admin.admin_users') }}">Users</a>
-                    <a class="nav-link" href="{{ url_for('admin_bookings') }}">Bookings</a>
+                    <a class="nav-link" href="{{ url_for('admin.admin_bookings') }}">Bookings</a>
                 {% elif current_user.role == "staff" %}
                     <a class="nav-link" href="{{ url_for('staff_dashboard') }}">Dashboard</a>
                     <a class="nav-link" href="{{ url_for('staff_profile') }}">Profile</a>

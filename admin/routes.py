@@ -434,3 +434,31 @@ def activate_user(user_id):
     db.session.commit()
     flash("User activated.", "success")
     return redirect(url_for("admin.admin_users"))
+
+@admin_bp.route("/admin/bookings")
+@role_required("admin")
+def admin_bookings():
+    query = request.args.get("q", "").strip()
+
+    bookings_query = Booking.query.join(User).join(Trek)
+
+    if query:
+        bookings_query = bookings_query.filter(
+            db.or_(
+                User.name.ilike(f"%{query}%"),
+                Trek.name.ilike(f"%{query}%"),
+                Booking.id == parse_int(query, fallback=-1),
+            )
+        )
+
+    bookings = (
+        bookings_query
+        .order_by(Booking.booking_date.desc())
+        .all()
+    )
+
+    return render_template(
+        "admin/bookings.html",
+        bookings=bookings,
+        query=query,
+    )
