@@ -6,8 +6,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">User Dashboard</h1>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary" href="{{ url_for('user_treks') }}">Find Treks</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('user_profile') }}">Update Profile</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('user.user_treks') }}">Find Treks</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('user.user_profile') }}">Update Profile</a>
     </div>
 </div>
 
@@ -26,7 +26,7 @@
                             <td>{{ trek.difficulty }}</td>
                             <td>{{ trek.available_slots }}</td>
                             <td>
-                                <form method="post" action="{{ url_for('book_trek', trek_id=trek.id) }}">
+                                <form method="post" action="{{ url_for('user.book_trek', trek_id=trek.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-primary" {% if trek.available_slots <= 0 %}disabled{% endif %}>Book</button>
                                 </form>
@@ -44,7 +44,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Your Bookings</span>
-                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('user_history') }}">View All</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('user.user_history') }}">View All</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
