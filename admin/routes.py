@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, app, flash, redirect, render_template, request, url_for
 from werkzeug.security import generate_password_hash
 
 from auth.routes import role_required
@@ -392,3 +392,45 @@ def delete_staff(user_id):
 
     flash("Staff member removed.", "info")
     return redirect(url_for("admin.admin_staff"))
+
+@admin_bp.route("/admin/users")
+@role_required("admin")
+def admin_users():
+    query = request.args.get("q", "").strip()
+
+    users_query = User.query.filter_by(role="trekker")
+
+    if query:
+        users_query = users_query.filter(
+            db.or_(
+                User.name.ilike(f"%{query}%"),
+                User.email.ilike(f"%{query}%"),
+                User.id == parse_int(query, fallback=-1),
+            )
+        )
+
+    users = users_query.order_by(User.created_at.desc()).all()
+
+    return render_template(
+        "admin/users.html",
+        users=users,
+        query=query,
+    )
+
+@admin_bp.route("/admin/users/<int:user_id>/blacklist", methods=["POST"])
+@role_required("admin")
+def blacklist_user(user_id):
+    user = User.query.filter_by(id=user_id, role="trekker").first_or_404()
+    user.status = "blacklisted"
+    db.session.commit()
+    flash("User blacklisted.", "warning")
+    return redirect(url_for("admin.admin_users"))
+
+@admin_bp.route("/admin/users/<int:user_id>/activate", methods=["POST"])
+@role_required("admin")
+def activate_user(user_id):
+    user = User.query.filter_by(id=user_id, role="trekker").first_or_404()
+    user.status = "active"
+    db.session.commit()
+    flash("User activated.", "success")
+    return redirect(url_for("admin.admin_users"))

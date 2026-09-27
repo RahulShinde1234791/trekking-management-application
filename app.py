@@ -89,40 +89,6 @@ def create_app(test_config=None):
         return render_template("home.html")
 
 
-    @app.route("/admin/users")
-    @role_required("admin")
-    def admin_users():
-        query = request.args.get("q", "").strip()
-        users_query = User.query.filter_by(role="trekker")
-        if query:
-            users_query = users_query.filter(
-                db.or_(
-                    User.name.ilike(f"%{query}%"),
-                    User.email.ilike(f"%{query}%"),
-                    User.id == parse_int(query, fallback=-1),
-                )
-            )
-        users = users_query.order_by(User.created_at.desc()).all()
-        return render_template("admin/users.html", users=users, query=query)
-
-    @app.route("/admin/users/<int:user_id>/blacklist", methods=["POST"])
-    @role_required("admin")
-    def blacklist_user(user_id):
-        user = User.query.filter_by(id=user_id, role="trekker").first_or_404()
-        user.status = "blacklisted"
-        db.session.commit()
-        flash("User blacklisted.", "warning")
-        return redirect(url_for("admin_users"))
-
-    @app.route("/admin/users/<int:user_id>/activate", methods=["POST"])
-    @role_required("admin")
-    def activate_user(user_id):
-        user = User.query.filter_by(id=user_id, role="trekker").first_or_404()
-        user.status = "active"
-        db.session.commit()
-        flash("User activated.", "success")
-        return redirect(url_for("admin_users"))
-
     @app.route("/admin/bookings")
     @role_required("admin")
     def admin_bookings():
