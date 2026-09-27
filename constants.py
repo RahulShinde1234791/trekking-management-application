@@ -8,3 +8,16 @@ TREK_STATUSES = (
     "Ongoing",
     "Completed",
 )
+
+STAFF_TREK_STATUSES = (
+    "Open",
+    "Closed",
+    "Ongoing",
+    "Completed",
+)
+
+BOOKING_STATUSES = (
+    "Booked",
+    "Cancelled",
+    "Completed",
+)
