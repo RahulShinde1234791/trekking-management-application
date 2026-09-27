@@ -37,7 +37,7 @@
                         <textarea class="form-control" id="bio" name="bio" rows="4">{{ staff.staff_profile.bio if staff.staff_profile else '' }}</textarea>
                     </div>
                     <button class="btn btn-primary" type="submit">Save Profile</button>
-                    <a class="btn btn-outline-secondary" href="{{ url_for('staff_dashboard') }}">Back</a>
+                    <a class="btn btn-outline-secondary" href="{{ url_for('staff.staff_dashboard') }}">Back</a>
                 </form>
             </div>
         </div>

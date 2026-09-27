@@ -77,7 +77,7 @@ def redirect_to_dashboard(user):
     if user.role == "admin":
         return redirect(url_for("admin.admin_dashboard"))
     if user.role == "staff":
-        return redirect(url_for("staff_dashboard"))
+        return redirect(url_for("staff.staff_dashboard"))
     return redirect(url_for("user_dashboard"))
 
 @auth_bp.route("/register/user", methods=["GET", "POST"])

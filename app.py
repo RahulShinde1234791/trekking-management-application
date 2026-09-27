@@ -32,7 +32,8 @@ from auth.routes import (
     role_required,
 )
 from admin import admin_bp
-from utils import parse_int
+from staff import staff_bp
+from utils import parse_int, update_booking_status
 from flask_wtf.csrf import CSRFProtect
 
 from flask import (
@@ -77,6 +78,7 @@ def create_app(test_config=None):
     db.init_app(app)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(staff_bp)
 
     @app.context_processor
     def inject_current_user():
@@ -88,100 +90,6 @@ def create_app(test_config=None):
             return redirect_to_dashboard(get_current_user())
         return render_template("home.html")
 
-    @app.route("/staff/dashboard")
-    @role_required("staff")
-    def staff_dashboard():
-        staff = get_current_user()
-        treks = Trek.query.filter_by(assigned_staff_id=staff.id).order_by(Trek.start_date.asc()).all()
-        return render_template("staff/dashboard.html", treks=treks)
-
-    @app.route("/staff/profile", methods=["GET", "POST"])
-    @role_required("staff")
-    def staff_profile():
-        staff = get_current_user()
-        if request.method == "POST":
-            name = request.form.get("name", "").strip()
-            phone = request.form.get("phone", "").strip()
-
-            if not name:
-                flash("Name is required.", "danger")
-                return render_template("staff/profile.html", staff=staff)
-
-            if len(name) > 100:
-                flash("Name is too long.", "danger")
-                return render_template("staff/profile.html", staff=staff)
-
-            if not is_valid_phone(phone):
-                flash("Please enter a valid phone number.", "danger")
-                return render_template("staff/profile.html", staff=staff)
-
-            staff.name = name
-            staff.phone = phone
-            profile = staff.staff_profile
-            if profile:
-                profile.contact_details = request.form.get("contact_details", "").strip()
-                profile.bio = request.form.get("bio", "").strip()
-                try:
-                    profile.experience_years = max(
-                        0,
-                        int(request.form.get("experience_years", "0") or 0),
-                    )
-                except ValueError:
-                    flash("Experience must be a number.", "danger")
-                    return render_template("staff/profile.html", staff=staff)
-            db.session.commit()
-            flash("Profile updated successfully.", "success")
-            return redirect(url_for("staff_profile"))
-
-        return render_template("staff/profile.html", staff=staff)
-
-    @app.route("/staff/treks/<int:trek_id>")
-    @role_required("staff")
-    def staff_trek_detail(trek_id):
-        trek = get_assigned_trek_or_404(trek_id)
-        return render_template("staff/trek_detail.html", trek=trek)
-
-    @app.route("/staff/treks/<int:trek_id>/update", methods=["POST"])
-    @role_required("staff")
-    def update_staff_trek(trek_id):
-        trek = get_assigned_trek_or_404(trek_id)
-        try:
-            available_slots = int(request.form.get("available_slots", "0"))
-        except ValueError:
-            flash("Available slots must be a number.", "danger")
-            return redirect(url_for("staff_trek_detail", trek_id=trek.id))
-
-        status = request.form.get("status", "").strip()
-        if status not in ["Open", "Closed", "Ongoing", "Completed"]:
-            flash("Staff can update trek status only to Open, Closed, Ongoing, or Completed.", "danger")
-            return redirect(url_for("staff_trek_detail", trek_id=trek.id))
-
-        if available_slots < 0:
-            flash("Available slots cannot be negative.", "danger")
-            return redirect(url_for("staff_trek_detail", trek_id=trek.id))
-
-        trek.available_slots = available_slots
-        trek.status = status
-        if status == "Completed":
-            complete_booked_participants(trek)
-        db.session.commit()
-        flash("Trek details updated.", "success")
-        return redirect(url_for("staff_trek_detail", trek_id=trek.id))
-
-    @app.route("/staff/bookings/<int:booking_id>/status", methods=["POST"])
-    @role_required("staff")
-    def update_participant_status(booking_id):
-        booking = Booking.query.get_or_404(booking_id)
-        get_assigned_trek_or_404(booking.trek_id)
-        status = request.form.get("status", "").strip()
-        if status not in ["Booked", "Cancelled", "Completed"]:
-            flash("Invalid booking status.", "danger")
-            return redirect(url_for("staff_trek_detail", trek_id=booking.trek_id))
-
-        message, category = update_booking_status(booking, status)
-        db.session.commit()
-        flash(message, category)
-        return redirect(url_for("staff_trek_detail", trek_id=booking.trek_id))
 
     @app.route("/user/dashboard")
     @role_required("trekker")
@@ -334,36 +242,6 @@ def get_approved_staff():
         .order_by(User.name.asc())
         .all()
     )
-
-
-def get_assigned_trek_or_404(trek_id):
-    staff = get_current_user()
-    return Trek.query.filter_by(id=trek_id, assigned_staff_id=staff.id).first_or_404()
-
-
-def update_booking_status(booking, new_status):
-    old_status = booking.status
-    if old_status == new_status:
-        return "Booking status unchanged.", "info"
-
-    if new_status == "Booked" and old_status == "Cancelled":
-        if booking.trek.status != "Open":
-            return "Cancelled bookings can be restored only when the trek is Open.", "danger"
-        if booking.trek.available_slots <= 0:
-            return "Cannot restore booking because the trek is full.", "danger"
-        booking.trek.available_slots -= 1
-
-    if new_status == "Cancelled" and old_status == "Booked":
-        booking.trek.available_slots += 1
-
-    booking.status = new_status
-    return "Booking status updated.", "success"
-
-
-def complete_booked_participants(trek):
-    for booking in trek.bookings:
-        if booking.status == "Booked":
-            booking.status = "Completed"
 
 
 def build_trek_from_form(trek):

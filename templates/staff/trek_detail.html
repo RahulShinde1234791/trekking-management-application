@@ -8,7 +8,7 @@
         <h1 class="h3 mb-1">{{ trek.name }}</h1>
         <div class="text-muted">{{ trek.location }} · {{ trek.difficulty }} · {{ trek.duration_days }} days</div>
     </div>
-    <a class="btn btn-outline-secondary" href="{{ url_for('staff_dashboard') }}">Back</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('staff.staff_dashboard') }}">Back</a>
 </div>
 
 <div class="row g-4">
@@ -16,7 +16,7 @@
         <div class="card">
             <div class="card-header">Update Trek</div>
             <div class="card-body">
-                <form method="post" action="{{ url_for('update_staff_trek', trek_id=trek.id) }}">
+                <form method="post" action="{{ url_for('staff.update_staff_trek', trek_id=trek.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label class="form-label" for="available_slots">Available Slots</label>
@@ -50,7 +50,7 @@
                             <td>{{ booking.status }}</td>
                             <td>{{ booking.trek.status }}</td>
                             <td>
-                                <form class="d-flex gap-2" method="post" action="{{ url_for('update_participant_status', booking_id=booking.id) }}">
+                                <form class="d-flex gap-2" method="post" action="{{ url_for('staff.update_participant_status', booking_id=booking.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select class="form-select form-select-sm" name="status">
                                         {% for status in ["Booked", "Cancelled", "Completed"] %}
