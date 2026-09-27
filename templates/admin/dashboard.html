@@ -36,7 +36,7 @@
                             <td>{{ staff.name }}</td>
                             <td>{{ staff.email }}</td>
                             <td class="text-end">
-                                <form method="post" action="{{ url_for('approve_staff', user_id=staff.id) }}">
+                                <form method="post" action="{{ url_for('admin.approve_staff', user_id=staff.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-success">Approve</button>
                                 </form>

@@ -259,3 +259,136 @@ def assign_staff(trek_id):
 
     flash("Staff assignment updated.", "success")
     return redirect(url_for("admin.admin_treks"))
+
+@admin_bp.route("/admin/staff")
+@role_required("admin")
+def admin_staff():
+    query = request.args.get("q", "").strip()
+
+    staff_query = User.query.filter_by(role="staff")
+
+    if query:
+        staff_query = staff_query.filter(
+            db.or_(
+                User.name.ilike(f"%{query}%"),
+                User.email.ilike(f"%{query}%"),
+                User.id == parse_int(query, fallback=-1),
+            )
+        )
+
+    staff_members = staff_query.order_by(User.created_at.desc()).all()
+
+    return render_template(
+        "admin/staff.html",
+        staff_members=staff_members,
+        query=query,
+    )
+
+@admin_bp.route("/admin/staff/create", methods=["GET", "POST"])
+@role_required("admin")
+def create_staff():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        phone = request.form.get("phone", "").strip()
+        contact_details = request.form.get("contact_details", "").strip()
+        experience_years = request.form.get("experience_years", "0").strip()
+        password = request.form.get("password", "")
+
+        if not name or not email or not password:
+            flash("Name, email, and password are required.", "danger")
+            return render_template("admin/staff_form.html")
+
+        if User.query.filter_by(email=email).first():
+            flash("An account with this email already exists.", "danger")
+            return render_template("admin/staff_form.html")
+
+        try:
+            experience_value = max(0, int(experience_years or 0))
+        except ValueError:
+            flash("Experience must be a number.", "danger")
+            return render_template("admin/staff_form.html")
+
+        staff = User(
+            name=name,
+            email=email,
+            phone=phone,
+            password_hash=generate_password_hash(password),
+            role="staff",
+            status="active",
+        )
+
+        staff.staff_profile = StaffProfile(
+            contact_details=contact_details,
+            experience_years=experience_value,
+            approval_status="approved",
+        )
+
+        db.session.add(staff)
+        db.session.commit()
+
+        flash("Staff member added and approved.", "success")
+        return redirect(url_for("admin.admin_staff"))
+
+    return render_template("admin/staff_form.html")
+
+@admin_bp.route("/admin/staff/<int:user_id>/approve", methods=["POST"])
+@role_required("admin")
+def approve_staff(user_id):
+    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+
+    staff.status = "active"
+
+    if staff.staff_profile:
+        staff.staff_profile.approval_status = "approved"
+
+    db.session.commit()
+
+    flash("Staff member approved.", "success")
+    return redirect(url_for("admin.admin_staff"))
+
+@admin_bp.route("/admin/staff/<int:user_id>/blacklist", methods=["POST"])
+@role_required("admin")
+def blacklist_staff(user_id):
+    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+
+    staff.status = "blacklisted"
+
+    if staff.staff_profile:
+        staff.staff_profile.approval_status = "rejected"
+
+    db.session.commit()
+
+    flash("Staff member blacklisted.", "warning")
+    return redirect(url_for("admin.admin_staff"))
+
+
+@admin_bp.route("/admin/staff/<int:user_id>/activate", methods=["POST"])
+@role_required("admin")
+def activate_staff(user_id):
+    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+
+    staff.status = "active"
+
+    if staff.staff_profile:
+        staff.staff_profile.approval_status = "approved"
+
+    db.session.commit()
+
+    flash("Staff member activated.", "success")
+    return redirect(url_for("admin.admin_staff"))
+
+
+@admin_bp.route("/admin/staff/<int:user_id>/delete", methods=["POST"])
+@role_required("admin")
+def delete_staff(user_id):
+    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+
+    for trek in staff.assigned_treks:
+        trek.assigned_staff_id = None
+
+    db.session.delete(staff)
+    db.session.commit()
+
+    flash("Staff member removed.", "info")
+    return redirect(url_for("admin.admin_staff"))
