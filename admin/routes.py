@@ -7,7 +7,7 @@ from auth.routes import role_required
 from constants import DIFFICULTIES, TREK_STATUSES
 from extensions import db
 from models import Booking, StaffProfile, Trek, User
-from utils import parse_int
+from utils import parse_int, generate_staff_code
 
 from . import admin_bp
 
@@ -199,6 +199,11 @@ def create_trek():
 @role_required("admin")
 def edit_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
+
+    if trek.status == "Archived":
+        flash("Archived treks cannot be edited.", "warning")
+        return redirect(url_for("admin.admin_treks"))
+
     staff_members = get_approved_staff()
 
     if request.method == "POST":
@@ -225,15 +230,38 @@ def edit_trek(trek_id):
 @role_required("admin")
 def delete_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
-    db.session.delete(trek)
+
+    trek.status = "Archived"
+
     db.session.commit()
-    flash("Trek removed successfully.", "info")
+
+    flash("Trek archived successfully.", "info")
+    return redirect(url_for("admin.admin_treks"))
+
+@admin_bp.route("/admin/treks/<int:trek_id>/restore", methods=["POST"])
+@role_required("admin")
+def restore_trek(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+
+    if trek.status != "Archived":
+        flash("Only archived treks can be restored.", "warning")
+        return redirect(url_for("admin.admin_treks"))
+
+    trek.status = "Closed"
+
+    db.session.commit()
+
+    flash("Trek restored successfully.", "success")
     return redirect(url_for("admin.admin_treks"))
 
 @admin_bp.route("/admin/treks/<int:trek_id>/assign", methods=["POST"])
 @role_required("admin")
 def assign_staff(trek_id):
     trek = Trek.query.get_or_404(trek_id)
+
+    if trek.status == "Archived":
+        flash("Archived treks cannot be modified.", "warning")
+        return redirect(url_for("admin.admin_treks"))
 
     staff_id = parse_int(
         request.form.get("assigned_staff_id"),
@@ -243,11 +271,17 @@ def assign_staff(trek_id):
     if staff_id is None:
         trek.assigned_staff_id = None
     else:
-        staff = User.query.filter_by(
-            id=staff_id,
-            role="staff",
-            status="active",
-        ).first()
+        staff = (
+            User.query
+            .filter_by(
+                id=staff_id,
+                role="staff",
+                status="active",
+            )
+            .join(StaffProfile)
+            .filter(StaffProfile.approval_status == "approved")
+            .first()
+        )
 
         if not staff:
             flash("Please select an approved staff member.", "danger")
@@ -319,6 +353,7 @@ def create_staff():
         )
 
         staff.staff_profile = StaffProfile(
+            staff_code=generate_staff_code(),
             contact_details=contact_details,
             experience_years=experience_value,
             approval_status="approved",
@@ -337,6 +372,13 @@ def create_staff():
 def approve_staff(user_id):
     staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
 
+    if staff.status == "deactivated":
+        flash(
+            "Deactivated staff accounts cannot be reactivated.",
+            "warning",
+        )
+        return redirect(url_for("admin.admin_staff"))
+
     staff.status = "active"
 
     if staff.staff_profile:
@@ -350,7 +392,17 @@ def approve_staff(user_id):
 @admin_bp.route("/admin/staff/<int:user_id>/blacklist", methods=["POST"])
 @role_required("admin")
 def blacklist_staff(user_id):
-    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+    staff = User.query.filter_by(
+        id=user_id,
+        role="staff",
+    ).first_or_404()
+
+    if staff.status == "deactivated":
+        flash(
+            "Deactivated staff accounts cannot be changed.",
+            "warning",
+        )
+        return redirect(url_for("admin.admin_staff"))
 
     staff.status = "blacklisted"
 
@@ -368,6 +420,13 @@ def blacklist_staff(user_id):
 def activate_staff(user_id):
     staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
 
+    if staff.status == "deactivated":
+        flash(
+            "Deactivated staff accounts cannot be reactivated.",
+            "warning",
+        )
+        return redirect(url_for("admin.admin_staff"))
+
     staff.status = "active"
 
     if staff.staff_profile:
@@ -379,18 +438,26 @@ def activate_staff(user_id):
     return redirect(url_for("admin.admin_staff"))
 
 
-@admin_bp.route("/admin/staff/<int:user_id>/delete", methods=["POST"])
+@admin_bp.route("/admin/staff/<int:user_id>/deactivate", methods=["POST"])
 @role_required("admin")
-def delete_staff(user_id):
-    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+def deactivate_staff(user_id):
+    staff = User.query.filter_by(
+        id=user_id,
+        role="staff",
+    ).first_or_404()
+
+    if staff.status == "deactivated":
+        flash("This staff account is already deactivated.", "info")
+        return redirect(url_for("admin.admin_staff"))
+
+    staff.status = "deactivated"
 
     for trek in staff.assigned_treks:
         trek.assigned_staff_id = None
 
-    db.session.delete(staff)
     db.session.commit()
 
-    flash("Staff member removed.", "info")
+    flash("Staff account deactivated successfully.", "success")
     return redirect(url_for("admin.admin_staff"))
 
 @admin_bp.route("/admin/users")
@@ -420,27 +487,127 @@ def admin_users():
 @admin_bp.route("/admin/users/<int:user_id>/blacklist", methods=["POST"])
 @role_required("admin")
 def blacklist_user(user_id):
-    user = User.query.filter_by(id=user_id, role="trekker").first_or_404()
+    user = User.query.filter_by(
+        id=user_id,
+        role="trekker",
+    ).first_or_404()
+
+    if user.status == "deactivated":
+        flash(
+            "Deactivated accounts cannot be blacklisted.",
+            "warning",
+        )
+        return redirect(url_for("admin.admin_users"))
+
     user.status = "blacklisted"
     db.session.commit()
+
     flash("User blacklisted.", "warning")
     return redirect(url_for("admin.admin_users"))
 
 @admin_bp.route("/admin/users/<int:user_id>/activate", methods=["POST"])
 @role_required("admin")
 def activate_user(user_id):
-    user = User.query.filter_by(id=user_id, role="trekker").first_or_404()
+    user = User.query.filter_by(
+        id=user_id,
+        role="trekker",
+    ).first_or_404()
+
+    if user.status == "deactivated":
+        flash(
+            "Deactivated accounts cannot be reactivated.",
+            "warning",
+        )
+        return redirect(url_for("admin.admin_users"))
+
     user.status = "active"
     db.session.commit()
+
     flash("User activated.", "success")
     return redirect(url_for("admin.admin_users"))
+
+@admin_bp.route("/admin/users/<int:user_id>/deactivate", methods=["POST"])
+@role_required("admin")
+def deactivate_user(user_id):
+    user = User.query.filter_by(
+        id=user_id,
+        role="trekker",
+    ).first_or_404()
+
+    if user.status == "deactivated":
+        flash("This account is already deactivated.", "info")
+        return redirect(url_for("admin.admin_users"))
+
+    user.status = "deactivated"
+    db.session.commit()
+
+    flash("Trekker account deactivated successfully.", "success")
+    return redirect(url_for("admin.admin_users"))
+
+@admin_bp.route("/admin/staff/<int:user_id>/edit", methods=["GET", "POST"])
+@role_required("admin")
+def edit_staff(user_id):
+    staff = User.query.filter_by(id=user_id, role="staff").first_or_404()
+
+    if not staff.staff_profile:
+        flash("Staff profile not found.", "danger")
+        return redirect(url_for("admin.admin_staff"))
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        phone = request.form.get("phone", "").strip()
+        contact_details = request.form.get("contact_details", "").strip()
+        experience_years = request.form.get("experience_years", "0").strip()
+        bio = request.form.get("bio", "").strip()
+
+        if not name or not email:
+            flash("Name and email are required.", "danger")
+            return render_template("admin/staff_form.html", staff=staff, edit_mode=True)
+
+        existing_user = User.query.filter(
+            User.email == email,
+            User.id != staff.id,
+        ).first()
+
+        if existing_user:
+            flash("An account with this email already exists.", "danger")
+            return render_template("admin/staff_form.html", staff=staff, edit_mode=True)
+
+        try:
+            experience_value = max(0, int(experience_years or 0))
+        except ValueError:
+            flash("Experience must be a number.", "danger")
+            return render_template("admin/staff_form.html", staff=staff, edit_mode=True)
+
+        staff.name = name
+        staff.email = email
+        staff.phone = phone
+        staff.staff_profile.contact_details = contact_details
+        staff.staff_profile.experience_years = experience_value
+        staff.staff_profile.bio = bio
+
+        db.session.commit()
+
+        flash("Staff member updated successfully.", "success")
+        return redirect(url_for("admin.admin_staff"))
+
+    return render_template(
+        "admin/staff_form.html",
+        staff=staff,
+        edit_mode=True,
+    )
 
 @admin_bp.route("/admin/bookings")
 @role_required("admin")
 def admin_bookings():
     query = request.args.get("q", "").strip()
 
-    bookings_query = Booking.query.join(User).join(Trek)
+    bookings_query = (
+        Booking.query
+        .join(User, Booking.user_id == User.id)
+        .join(Trek, Booking.trek_id == Trek.id)
+    )
 
     if query:
         bookings_query = bookings_query.filter(

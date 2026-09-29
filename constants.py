@@ -7,6 +7,7 @@ TREK_STATUSES = (
     "Closed",
     "Ongoing",
     "Completed",
+    "Archived",
 )
 
 STAFF_TREK_STATUSES = (

@@ -17,7 +17,11 @@
                 <tr>
                     <td>{{ trek.name }}</td>
                     <td>{{ trek.location }}</td>
-                    <td>{{ trek.status }}</td>
+                    <td>
+                        <span class="badge badge-trek-status-{{ trek.status|lower }}">
+                            {{ trek.status }}
+                        </span>
+                    </td>
                     <td>{{ trek.available_slots }}</td>
                     <td>{{ trek.bookings|length }}</td>
                     <td class="text-end">

@@ -46,9 +46,17 @@
                         <tr>
                             <td>{{ booking.user.name }}</td>
                             <td>{{ booking.user.email }}</td>
-                            <td>{{ booking.booking_date }}</td>
-                            <td>{{ booking.status }}</td>
-                            <td>{{ booking.trek.status }}</td>
+                            <td>{{ booking.booking_date.strftime('%d %b %Y') }}</td>
+                            <td>
+                                <span class="badge badge-status-{{ booking.status|lower }}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-trek-status-{{ booking.trek.status|lower }}">
+                                    {{ booking.trek.status }}
+                                </span>
+                            </td>
                             <td>
                                 <form class="d-flex gap-2" method="post" action="{{ url_for('staff.update_participant_status', booking_id=booking.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

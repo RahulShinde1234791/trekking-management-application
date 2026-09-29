@@ -1,0 +1,709 @@
+:root {
+    /* Mountain palette */
+    --pine-dark: #2e1b0c;
+    --forest-olive: #50421c;
+    --sage: #6e735a;
+
+    --mountain-gray: #a9aa92;
+    --mist-green: #bcd3c5;
+
+    --warm-cream: #f0e0a2;
+    --earth-ochre: #82672d;
+    --sunlit-gold: #c29c4d;
+
+    /* UI neutrals */
+    --surface: #faf8f0;
+    --surface-soft: #e8e5d8;
+    --border: #dedbcf;
+
+    --text-dark: #26332d;
+    --text-muted: #667068;
+}
+
+
+/* Global page styling */
+body {
+    background-color: #ded9c9;
+    color: var(--text-dark);
+}
+
+
+/* Navbar */
+/* Trekking header */
+.site-header {
+    position: relative;
+    padding: 12px 0;
+    overflow: visible;
+
+    background-image: url("../images/mountain_scenery.webp");
+    background-size: cover;
+    background-position: center 25%;
+}
+
+
+/* Soften the mountain scenery */
+.site-header::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+
+    background-image: url("../images/mountain_scenery.webp");
+    background-size: cover;
+    background-position: center 25%;
+
+    filter: blur(1px);
+    transform: scale(1.05);
+
+    z-index: 0;
+}
+
+/* Glass navigation panel */
+.site-header .navbar {
+    position: relative;
+    z-index: 2;
+
+    width: calc(100% - 48px);
+    min-height: 100px;
+    margin: 0 auto;
+
+    padding: 1.25rem 2rem;
+
+    background: rgba(82, 64, 35, 0.22) !important;
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+.navbar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar .nav-link:hover {
+    color: #ffffff;
+}
+
+
+/* Cards */
+.card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(22, 58, 45, 0.08);
+}
+
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--forest-700);
+    border-color: var(--forest-700);
+}
+
+.btn-primary:hover {
+    background-color: var(--forest-800);
+    border-color: var(--forest-800);
+}
+
+
+/* Links */
+a {
+    color: var(--forest-700);
+}
+
+a:hover {
+    color: var(--forest-900);
+}
+
+/* Navbar refinement */
+.navbar {
+    box-shadow: 0 2px 10px rgba(22, 58, 45, 0.15);
+}
+
+.navbar-brand {
+    letter-spacing: 0.2px;
+}
+
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.15);
+}
+
+
+/* Account dropdown */
+.navbar .dropdown-menu {
+    border: 1px solid var(--stone-200);
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(22, 58, 45, 0.12);
+    padding: 0.4rem;
+}
+
+.navbar .dropdown-item {
+    border-radius: 7px;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: var(--stone-100);
+    color: var(--forest-800);
+}
+
+/* Forest card styling */
+.card {
+    background: #faf8f0;
+    border: 1px solid #d1ccbc;
+    border-radius: 14px;
+
+    box-shadow: 0 6px 18px rgba(46, 27, 12, 0.08);
+
+    overflow: hidden;
+}
+
+.card-header {
+    position: relative;
+
+    background: var(--stone-50);
+    color: var(--forest-900);
+
+    border-bottom: 1px solid var(--stone-200);
+
+    font-weight: 600;
+    font-size: 1.05rem;
+
+    padding: 1rem 1.25rem;
+}
+
+.card-header::before {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 4px;
+
+    background: var(--forest-700);
+    border-radius: 14px 0 0 14px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.table thead th {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+
+    border-bottom: 1px solid #a8bcae;
+
+    font-weight: 600;
+}
+
+.table tbody td {
+    background-color: var(--surface);
+    border-color: var(--border);
+    color: var(--text-dark);
+    padding: 0.85rem 0.75rem;
+}
+
+/* Forest action buttons */
+.btn-primary {
+    background-color: var(--forest-olive);
+    border-color: var(--forest-olive);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: var(--pine-dark);
+    border-color: var(--pine-dark);
+    color: #ffffff;
+}
+
+/* Secondary action buttons */
+.btn-outline-secondary {
+    color: var(--forest-olive);
+    border-color: var(--forest-olive);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--forest-olive);
+    border-color: var(--forest-olive);
+    color: #ffffff;
+}
+
+.btn-outline-primary {
+    color: var(--forest-olive);
+    border-color: var(--forest-olive);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--forest-olive);
+    border-color: var(--forest-olive);
+    color: #ffffff;
+}
+
+/* Difficulty badges */
+.badge-difficulty-easy {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+}
+
+.badge-difficulty-moderate {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+.badge-difficulty-hard {
+    background-color: #b98972;
+    color: #ffffff;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Booking status badges */
+.badge-status-booked {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+}
+
+.badge-status-completed {
+    background-color: #aebfc2;
+    color: var(--text-dark);
+}
+
+.badge-status-cancelled {
+    background-color: #c79a86;
+    color: #ffffff;
+}
+
+.badge-status-pending {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+/* Payment status badges */
+.badge-payment-pending {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+.badge-payment-paid {
+    background-color: #aebfae;
+    color: var(--text-dark);
+}
+
+.badge-payment-failed {
+    background-color: #c79a86;
+    color: #ffffff;
+}
+
+.badge-payment-refunded {
+    background-color: #b8b4c4;
+    color: #ffffff;
+}
+
+/* Trek listing */
+.trek-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.trek-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(35, 48, 42, 0.08);
+}
+
+.trek-card-image {
+    height: 150px;
+    background-image: url("../images/mountain_scenery.webp");
+    background-size: cover;
+    background-position: center 55%;
+}
+
+.trek-card-body {
+    padding: 1.25rem;
+}
+
+.trek-card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.trek-card-heading h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 650;
+}
+
+.trek-card-heading p {
+    margin: 0.25rem 0 0;
+    color: var(--text-muted);
+}
+
+.trek-card-details {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+    color: var(--text-muted);
+}
+
+.trek-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.trek-card-footer form {
+    margin: 0;
+}
+
+.trek-empty {
+    padding: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    color: var(--text-muted);
+}
+
+.dashboard-intro {
+    padding: 0.5rem 0 1rem;
+    text-align: center;
+}
+
+.dashboard-intro::before {
+    content: "";
+    display: block;
+    width: 65%;
+    height: 3px;
+    margin: 0 auto 1.5rem;
+    background-color: var(--forest-olive);
+    border-radius: 999px;
+}
+
+.dashboard-intro h1 {
+    margin-bottom: 0.5rem;
+    font-size: 2.7rem;
+    font-weight: 650;
+    color: var(--text-dark);
+}
+
+.dashboard-intro p {
+    margin-bottom: 1.25rem;
+    color: var(--text-dark);
+    font-size: 1.15rem;
+}
+
+.dashboard-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.badge-booking-date {
+    background-color: #c8c5d1;
+    color: var(--text-dark);
+}
+
+.profile-subtitle {
+    margin-top: -0.25rem;
+    margin-bottom: -1.50rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.profile-form .form-control {
+    border: 1px solid #d1ccbc;
+    border-radius: 10px;
+    background-color: #fffdf7;
+    color: var(--text-dark);
+}
+
+.profile-form .form-control:focus {
+    border-color: var(--forest-olive);
+    box-shadow: 0 0 0 0.2rem rgba(80, 66, 28, 0.12);
+}
+
+.profile-form .form-control:disabled {
+    background-color: #e9ecef !important;
+}
+
+.badge-trek-status-open {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+}
+
+.badge-trek-status-ongoing {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+.badge-trek-status-closed {
+    background-color: #c79a86;
+    color: #fff;
+}
+
+.badge-trek-status-completed {
+    background-color: #aebfc2;
+    color: var(--text-dark);
+}
+
+.btn-cancel {
+    background-color: #c79a86;
+    border-color: #c79a86;
+    color: #fff;
+}
+
+.btn-cancel:hover {
+    background-color: #a97863;
+    border-color: #a97863;
+    color: #fff;
+}
+
+.badge-booking-history-completed,
+.badge-booking-history-cancelled {
+    background-color: #d4d2cb;
+    color: #77736b;
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.admin-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 18px rgba(46, 27, 12, 0.07);
+}
+
+.admin-stat-label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.admin-stat-value {
+    display: block;
+    color: var(--text-dark);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.admin-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 18px rgba(46, 27, 12, 0.07);
+}
+
+.admin-stat-label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.admin-stat-value {
+    display: block;
+    color: var(--text-dark);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .admin-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .admin-stat-card {
+        padding: 1.1rem;
+    }
+
+    .admin-stat-value {
+        font-size: 1.8rem;
+    }
+}
+
+.admin-empty-state {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1.25rem;
+    color: var(--text-muted);
+}
+
+.admin-empty-state strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.admin-empty-state span {
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .page-content {
+        padding-top: 1rem !important;
+    }
+}
+
+.admin-dashboard-header + .admin-stats + .row .table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.admin-dashboard-header + .admin-stats + .row .table th,
+.admin-dashboard-header + .admin-stats + .row .table td {
+    width: 25%;
+}
+
+.badge-staff-status-active {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+}
+
+.badge-staff-status-blacklisted {
+    background-color: #c79a86;
+    color: #fff;
+}
+
+.badge-staff-approval-approved {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+}
+
+.badge-staff-approval-pending {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+.badge-staff-approval-rejected {
+    background-color: #c79a86;
+    color: #fff;
+}
+
+.badge-staff-approval-missing {
+    background-color: #d4d2cb;
+    color: #77736b;
+}
+
+.btn-blacklist {
+    background-color: transparent;
+    border: 1px solid #c79a86;
+    color: #a97863;
+}
+
+.btn-blacklist:hover {
+    background-color: #c79a86;
+    border-color: #c79a86;
+    color: #fff;
+}
+
+.btn-activate {
+    background-color: transparent;
+    border: 1px solid var(--forest-olive);
+    color: var(--forest-olive);
+}
+
+.btn-activate:hover {
+    background-color: var(--forest-olive);
+    border-color: var(--forest-olive);
+    color: #fff;
+}
+
+.badge-staff-status-pending {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+.btn-remove-staff {
+    background-color: transparent;
+    border: 1px solid #c79a86;
+    color: #a97863;
+}
+
+.btn-remove-staff:hover {
+    background-color: #a97863;
+    border-color: #a97863;
+    color: #fff;
+}
+
+.badge-user-status-active {
+    background-color: #b7cbbd;
+    color: var(--text-dark);
+}
+
+.badge-user-status-blacklisted {
+    background-color: #c79a86;
+    color: #fff;
+}
+
+.badge-user-status-pending {
+    background-color: #d8c9a5;
+    color: var(--text-dark);
+}
+
+.badge-trek-status-archived {
+    background-color: #d4d2cb;
+    color: #77736b;
+}
+
+/* Deactivated account status */
+.badge-user-status-deactivated {
+    background-color: #6c757d;
+    color: #ffffff;
+    padding: 0.4em 0.65em;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Deactivated account badges */
+.badge-user-status-deactivated,
+.badge-staff-status-deactivated {
+    background-color: #6c757d;
+    color: #ffffff;
+    padding: 0.4em 0.65em;
+    border-radius: 50rem;
+    font-weight: 600;
+}

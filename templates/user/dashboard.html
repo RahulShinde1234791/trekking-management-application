@@ -3,18 +3,32 @@
 {% block title %}User Dashboard - Trekking Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">User Dashboard</h1>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary" href="{{ url_for('user.user_treks') }}">Find Treks</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('user.user_profile') }}">Update Profile</a>
+<div class="dashboard-intro mb-4">
+    <div>
+        <h1>Welcome back, {{ current_user.name }}</h1>
+        <p>Find a trek, check your bookings, and get ready to explore.</p>
+    </div>
+
+    <div class="dashboard-actions">
+        <a class="btn btn-primary" href="{{ url_for('user.user_treks') }}">
+            Find Treks
+        </a>
+
+        <a class="btn btn-outline-secondary" href="{{ url_for('user.user_profile') }}">
+            Update Profile
+        </a>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-7">
+    <div class="col-lg-6">
         <div class="card">
-            <div class="card-header">Available Open Treks</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Available Open Treks</span>
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('user.user_treks') }}">
+                    View All
+                </a>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
                     <thead><tr><th>Trek</th><th>Location</th><th>Difficulty</th><th>Slots</th><th></th></tr></thead>
@@ -23,7 +37,11 @@
                         <tr>
                             <td>{{ trek.name }}</td>
                             <td>{{ trek.location }}</td>
-                            <td>{{ trek.difficulty }}</td>
+                            <td>
+                                <span class="badge badge-difficulty-{{ trek.difficulty|lower }}">
+                                    {{ trek.difficulty }}
+                                </span>
+                            </td>
                             <td>{{ trek.available_slots }}</td>
                             <td>
                                 <form method="post" action="{{ url_for('user.book_trek', trek_id=trek.id) }}">
@@ -40,7 +58,7 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-5">
+    <div class="col-lg-6">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Your Bookings</span>
@@ -48,13 +66,26 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
-                    <thead><tr><th>Trek</th><th>Status</th><th>Payment</th></tr></thead>
+                    <thead><tr><th>Trek</th><th>Status</th><th>Payment</th><th>Booked On</th></tr></thead>
                     <tbody>
                     {% for booking in bookings %}
                         <tr>
                             <td>{{ booking.trek.name }}</td>
-                            <td>{{ booking.status }}</td>
-                            <td>{{ booking.trek.status }}</td>
+                            <td>
+                                <span class="badge badge-status-{{ booking.status|lower }}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-payment-{{ booking.payment_status|lower }}">
+                                    {{ booking.payment_status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-booking-date">
+                                    {{ booking.booking_date.strftime('%d %b %Y') }}
+                                </span>
+                            </td>
                         </tr>
                     {% else %}
                         <tr><td colspan="3" class="text-muted">No bookings yet.</td></tr>

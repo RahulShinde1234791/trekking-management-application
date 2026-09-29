@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Manage Users - Trekking Management{% endblock %}
@@ -7,43 +8,137 @@
 
 <form class="row g-2 mb-3" method="get">
     <div class="col-md-10">
-        <input class="form-control" name="q" value="{{ query }}" placeholder="Search users by name, email, or ID">
+        <input
+            class="form-control"
+            name="q"
+            value="{{ query }}"
+            placeholder="Search users by name, email, or ID"
+        >
     </div>
     <div class="col-md-2">
-        <button class="btn btn-outline-primary w-100">Search</button>
+        <button class="btn btn-outline-primary w-100">
+            Search
+        </button>
     </div>
 </form>
 
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Bookings</th><th>Actions</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Bookings</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
             <tbody>
-            {% for user in users %}
+                {% for user in users %}
                 <tr>
                     <td>{{ user.id }}</td>
                     <td>{{ user.name }}</td>
                     <td>{{ user.email }}</td>
                     <td>{{ user.phone or "-" }}</td>
-                    <td>{{ user.status }}</td>
-                    <td>{{ user.bookings|length }}</td>
+
                     <td>
-                        {% if user.status == "blacklisted" %}
-                            <form method="post" action="{{ url_for('admin.activate_user', user_id=user.id) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button class="btn btn-sm btn-outline-success">Activate</button>
-                            </form>
-                        {% else %}
-                            <form method="post" action="{{ url_for('admin.blacklist_user', user_id=user.id) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button class="btn btn-sm btn-outline-warning">Blacklist</button>
-                            </form>
-                        {% endif %}
+                        <span class="badge badge-user-status-{{ user.status|lower }}">
+                            {{ user.status }}
+                        </span>
+                    </td>
+
+                    <td>{{ user.bookings|length }}</td>
+
+                    <td>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+
+                            {% if user.status == "deactivated" %}
+
+                                <span class="badge bg-secondary">
+                                    Deactivated
+                                </span>
+
+                            {% elif user.status == "blacklisted" %}
+
+                                <form
+                                    method="post"
+                                    action="{{ url_for('admin.activate_user', user_id=user.id) }}"
+                                    class="mb-0"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+                                    <button class="btn btn-sm btn-activate">
+                                        Activate
+                                    </button>
+                                </form>
+
+                                <form
+                                    method="post"
+                                    action="{{ url_for('admin.deactivate_user', user_id=user.id) }}"
+                                    class="mb-0"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+                                    <button class="btn btn-sm btn-remove-staff">
+                                        Deactivate
+                                    </button>
+                                </form>
+
+                            {% elif user.status == "active" %}
+
+                                <form
+                                    method="post"
+                                    action="{{ url_for('admin.blacklist_user', user_id=user.id) }}"
+                                    class="mb-0"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+                                    <button class="btn btn-sm btn-blacklist">
+                                        Blacklist
+                                    </button>
+                                </form>
+
+                                <form
+                                    method="post"
+                                    action="{{ url_for('admin.deactivate_user', user_id=user.id) }}"
+                                    class="mb-0"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+                                    <button class="btn btn-sm btn-remove-staff">
+                                        Deactivate
+                                    </button>
+                                </form>
+
+                            {% endif %}
+
+                        </div>
                     </td>
                 </tr>
-            {% else %}
-                <tr><td colspan="7" class="text-muted">No users found.</td></tr>
-            {% endfor %}
+
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-muted">
+                        No users found.
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

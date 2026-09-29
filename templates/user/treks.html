@@ -22,35 +22,59 @@
     </div>
 </form>
 
-<div class="card">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
-            <thead><tr><th>Trek</th><th>Location</th><th>Difficulty</th><th>Duration</th><th>Slots</th><th>Start</th><th></th></tr></thead>
-            <tbody>
-            {% for trek in treks %}
-                <tr>
-                    <td>{{ trek.name }}</td>
-                    <td>{{ trek.location }}</td>
-                    <td>{{ trek.difficulty }}</td>
-                    <td>{{ trek.duration_days }} days</td>
-                    <td>{{ trek.available_slots }}</td>
-                    <td>{{ trek.start_date or "-" }}</td>
-                    <td class="text-end">
-                        {% if user_bookings.get(trek.id) %}
-                            <span class="badge text-bg-secondary">Already booked</span>
-                        {% else %}
-                            <form method="post" action="{{ url_for('user.book_trek', trek_id=trek.id) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button class="btn btn-sm btn-primary" {% if trek.available_slots <= 0 %}disabled{% endif %}>Book Trek</button>
-                            </form>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% else %}
-                <tr><td colspan="7" class="text-muted">No open treks match your filters.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="trek-grid">
+    {% for trek in treks %}
+        <div class="trek-card">
+
+            <div class="trek-card-image"></div>
+
+            <div class="trek-card-body">
+                <div class="trek-card-heading">
+                    <div>
+                        <h2>{{ trek.name }}</h2>
+                        <p>{{ trek.location }}</p>
+                    </div>
+
+                    <span class="badge badge-difficulty-{{ trek.difficulty|lower }}">
+                        {{ trek.difficulty }}
+                    </span>
+                </div>
+
+                <div class="trek-card-details">
+                    <span>{{ trek.duration_days }} days</span>
+                    <span>{{ trek.available_slots }} slots</span>
+                </div>
+
+                <div class="trek-card-footer">
+                    <span>
+                        Starts {{ trek.start_date.strftime('%d %b %Y') if trek.start_date else "-" }}
+                    </span>
+
+                    {% if user_bookings.get(trek.id) %}
+                        <span class="badge text-bg-secondary">
+                            Already booked
+                        </span>
+                    {% else %}
+                        <form method="post"
+                              action="{{ url_for('user.book_trek', trek_id=trek.id) }}">
+                            <input type="hidden"
+                                   name="csrf_token"
+                                   value="{{ csrf_token() }}">
+
+                            <button class="btn btn-sm btn-primary"
+                                    {% if trek.available_slots <= 0 %}disabled{% endif %}>
+                                Book Trek
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    {% else %}
+        <div class="trek-empty">
+            No open treks match your filters.
+        </div>
+    {% endfor %}
 </div>
 {% endblock %}

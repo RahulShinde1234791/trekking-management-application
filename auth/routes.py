@@ -15,7 +15,8 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
-from models import StaffProfile, User
+from models import StaffProfile, User, TrekkerProfile
+from utils import generate_trekker_code, generate_staff_code
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -31,9 +32,25 @@ def get_current_user():
 def login_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        if not get_current_user():
+        user = get_current_user()
+
+        if not user:
             flash("Please log in to continue.", "warning")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
+
+        if user.status == "blacklisted":
+            session.clear()
+            flash("This account is blacklisted.", "danger")
+            return redirect(url_for("auth.login"))
+
+        if user.status == "deactivated":
+            session.clear()
+            flash(
+                "This account has been deactivated and can no longer be used.",
+                "danger",
+            )
+            return redirect(url_for("auth.login"))
+
         return view_func(*args, **kwargs)
 
     return wrapper
@@ -49,7 +66,7 @@ def role_required(*roles):
             if user.status == "blacklisted":
                 session.clear()
                 flash("This account is blacklisted.", "danger")
-                return redirect(url_for("login"))
+                return redirect(url_for("auth.login"))
 
             if user.role not in roles:
                 flash("You do not have permission to access that page.", "danger")
@@ -64,7 +81,7 @@ def role_required(*roles):
                 ):
                     session.clear()
                     flash("Staff access requires admin approval.", "warning")
-                    return redirect(url_for("login"))
+                    return redirect(url_for("auth.login"))
 
             return view_func(*args, **kwargs)
 
@@ -120,6 +137,10 @@ def register_user():
             role="trekker",
             status="active",
         )
+        user.trekker_profile = TrekkerProfile(
+            trekker_code=generate_trekker_code()
+        )
+
         db.session.add(user)
         db.session.commit()
 
@@ -178,6 +199,7 @@ def register_staff():
             status="pending",
         )
         staff.staff_profile = StaffProfile(
+            staff_code=generate_staff_code(),
             contact_details=contact_details,
             experience_years=experience_value,
             approval_status="pending",
@@ -203,7 +225,17 @@ def login():
             return render_template("auth/login.html")
 
         if user.status == "blacklisted":
-            flash("This account is blacklisted. Please contact the administrator.", "danger")
+            flash(
+                "This account is blacklisted. Please contact the administrator.",
+                "danger",
+            )
+            return render_template("auth/login.html")
+
+        if user.status == "deactivated":
+            flash(
+                "This account has been deactivated and can no longer be used.",
+                "danger",
+            )
             return render_template("auth/login.html")
 
         if user.role == "staff":

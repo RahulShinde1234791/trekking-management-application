@@ -55,10 +55,6 @@ def user_profile():
             flash("Please enter a valid phone number.", "danger")
             return render_template("user/profile.html", user=user)
 
-        if not name:
-            flash("Name is required.", "danger")
-            return render_template("user/profile.html", user=user)
-
         user.name = name
         user.phone = phone
         db.session.commit()
