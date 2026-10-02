@@ -34,7 +34,7 @@
         <table class="table table-hover mb-0 align-middle">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Staff ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Status</th>
@@ -47,7 +47,7 @@
             <tbody>
                 {% for staff in staff_members %}
                 <tr>
-                    <td>{{ staff.id }}</td>
+                    <td>{{ staff.staff_profile.staff_code }}</td>
                     <td>{{ staff.name }}</td>
                     <td>{{ staff.email }}</td>
 

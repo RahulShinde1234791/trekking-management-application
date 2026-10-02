@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 from auth.routes import role_required
 from constants import DIFFICULTIES, TREK_STATUSES
 from extensions import db
-from models import Booking, StaffProfile, Trek, User
+from models import Booking, StaffProfile, Trek, User, TrekkerProfile
 from utils import parse_int, generate_staff_code
 
 from . import admin_bp
@@ -299,13 +299,18 @@ def assign_staff(trek_id):
 def admin_staff():
     query = request.args.get("q", "").strip()
 
-    staff_query = User.query.filter_by(role="staff")
+    staff_query = (
+        User.query
+        .join(StaffProfile)
+        .filter(User.role == "staff")
+    )
 
     if query:
         staff_query = staff_query.filter(
             db.or_(
                 User.name.ilike(f"%{query}%"),
                 User.email.ilike(f"%{query}%"),
+                StaffProfile.staff_code.ilike(f"%{query}%"),
                 User.id == parse_int(query, fallback=-1),
             )
         )
@@ -465,13 +470,18 @@ def deactivate_staff(user_id):
 def admin_users():
     query = request.args.get("q", "").strip()
 
-    users_query = User.query.filter_by(role="trekker")
+    users_query = (
+        User.query
+        .join(TrekkerProfile)
+        .filter(User.role == "trekker")
+    )
 
     if query:
         users_query = users_query.filter(
             db.or_(
                 User.name.ilike(f"%{query}%"),
                 User.email.ilike(f"%{query}%"),
+                TrekkerProfile.trekker_code.ilike(f"%{query}%"),
                 User.id == parse_int(query, fallback=-1),
             )
         )
