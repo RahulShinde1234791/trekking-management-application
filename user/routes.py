@@ -92,7 +92,7 @@ def user_treks():
         for booking in Booking.query.filter_by(
             user_id=get_current_user().id
         ).all()
-        if booking.status in ["Booked", "Completed"]
+        if booking.status == "Booked"
     }
 
     return render_template(
@@ -113,7 +113,7 @@ def book_trek(trek_id):
     existing_booking = Booking.query.filter(
         Booking.user_id == user.id,
         Booking.trek_id == trek.id,
-        Booking.status.in_(["Booked", "Completed"]),
+        Booking.status == "Booked",
     ).first()
 
     if existing_booking:

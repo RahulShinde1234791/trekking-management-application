@@ -330,7 +330,7 @@ class Booking(db.Model):
             "trek_id",
             unique=True,
             sqlite_where=(
-                status.in_(["Booked", "Completed"])
+                status == "Booked"
             ),
         ),
     )

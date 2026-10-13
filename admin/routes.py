@@ -232,6 +232,7 @@ def delete_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
 
     trek.status = "Archived"
+    trek.assigned_staff_id = None
 
     db.session.commit()
 

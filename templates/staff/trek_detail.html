@@ -61,9 +61,18 @@
                                 <form class="d-flex gap-2" method="post" action="{{ url_for('staff.update_participant_status', booking_id=booking.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select class="form-select form-select-sm" name="status">
-                                        {% for status in ["Booked", "Cancelled", "Completed"] %}
-                                            <option value="{{ status }}" {% if booking.status == status %}selected{% endif %}>{{ status }}</option>
-                                        {% endfor %}
+                                        {% if booking.status == "Booked" %}
+                                            <option value="Booked" selected>Booked</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                            <option value="Completed">Completed</option>
+
+                                        {% elif booking.status == "Cancelled" %}
+                                            <option value="Booked">Booked</option>
+                                            <option value="Cancelled" selected>Cancelled</option>
+
+                                        {% else %}
+                                            <option value="Completed" selected>Completed</option>
+                                        {% endif %}
                                     </select>
                                     <button class="btn btn-sm btn-outline-primary">Save</button>
                                 </form>

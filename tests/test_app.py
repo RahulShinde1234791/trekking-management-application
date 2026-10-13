@@ -4,7 +4,7 @@ from app import create_app
 from models import User, Trek, Booking
 from werkzeug.security import generate_password_hash
 from extensions import db
-
+from utils import update_booking_status
 
 @pytest.fixture
 def app():
@@ -372,3 +372,255 @@ def test_admin_cannot_blacklist_deactivated_staff(client, app):
 
         assert staff is not None
         assert staff.status == "deactivated"
+
+def test_completed_booking_does_not_prevent_new_booking(app):
+    with app.app_context():
+        trekker = User(
+            name="Rebooking Test",
+            email="rebooking@example.com",
+            password_hash=generate_password_hash("password123"),
+            role="trekker",
+            status="active",
+        )
+
+        trek = Trek(
+            name="Rebooking Test Trek",
+            location="Test Location",
+            difficulty="Easy",
+            duration_days=2,
+            available_slots=5,
+            status="Open",
+        )
+
+        db.session.add_all([trekker, trek])
+        db.session.flush()
+
+        completed_booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Completed",
+            payment_status="Paid",
+        )
+
+        db.session.add(completed_booking)
+        db.session.commit()
+
+        new_booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Booked",
+            payment_status="Pending",
+        )
+
+        db.session.add(new_booking)
+        db.session.commit()
+
+        bookings = Booking.query.filter_by(
+            user_id=trekker.id,
+            trek_id=trek.id,
+        ).all()
+
+        assert len(bookings) == 2
+        assert {booking.status for booking in bookings} == {
+            "Completed",
+            "Booked",
+        }
+
+def test_duplicate_active_booking_is_rejected(app):
+    with app.app_context():
+        trekker = User(
+            name="Duplicate Test",
+            email="duplicate@example.com",
+            password_hash=generate_password_hash("password123"),
+            role="trekker",
+            status="active",
+        )
+
+        trek = Trek(
+            name="Duplicate Test Trek",
+            location="Test Location",
+            difficulty="Easy",
+            duration_days=2,
+            available_slots=5,
+            status="Open",
+        )
+
+        db.session.add_all([trekker, trek])
+        db.session.flush()
+
+        first_booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Booked",
+            payment_status="Pending",
+        )
+
+        db.session.add(first_booking)
+        db.session.commit()
+
+        duplicate_booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Booked",
+            payment_status="Pending",
+        )
+
+        db.session.add(duplicate_booking)
+
+        with pytest.raises(Exception):
+            db.session.commit()
+
+        db.session.rollback()
+
+        bookings = Booking.query.filter_by(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Booked",
+        ).all()
+
+        assert len(bookings) == 1
+
+def test_completed_booking_status_cannot_be_changed(app):
+    with app.app_context():
+        trekker = User(
+            name="Completed Test",
+            email="completed@example.com",
+            password_hash=generate_password_hash("password123"),
+            role="trekker",
+            status="active",
+        )
+
+        trek = Trek(
+            name="Completed Test Trek",
+            location="Test Location",
+            difficulty="Easy",
+            duration_days=2,
+            available_slots=5,
+            status="Open",
+        )
+
+        db.session.add_all([trekker, trek])
+        db.session.flush()
+
+        booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Completed",
+            payment_status="Paid",
+        )
+
+        db.session.add(booking)
+        db.session.commit()
+
+        message, category = update_booking_status(booking, "Cancelled")
+
+        assert message == "Completed bookings cannot be changed."
+        assert category == "danger"
+        assert booking.status == "Completed"
+
+def test_booking_status_transitions_update_slots_correctly(app):
+    with app.app_context():
+        trekker = User(
+            name="Slot Test",
+            email="slots@example.com",
+            password_hash=generate_password_hash("password123"),
+            role="trekker",
+            status="active",
+        )
+
+        trek = Trek(
+            name="Slot Test Trek",
+            location="Test Location",
+            difficulty="Easy",
+            duration_days=2,
+            available_slots=4,
+            status="Open",
+        )
+
+        db.session.add_all([trekker, trek])
+        db.session.flush()
+
+        booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Booked",
+            payment_status="Pending",
+        )
+
+        db.session.add(booking)
+        db.session.commit()
+
+        message, category = update_booking_status(booking, "Cancelled")
+        assert category == "success"
+        assert booking.status == "Cancelled"
+        assert trek.available_slots == 5
+
+        message, category = update_booking_status(booking, "Booked")
+        assert category == "success"
+        assert booking.status == "Booked"
+        assert trek.available_slots == 4
+
+        message, category = update_booking_status(booking, "Completed")
+        assert category == "success"
+        assert booking.status == "Completed"
+        assert trek.available_slots == 4
+
+def test_cancelled_booking_allows_new_booking_through_route(client, app):
+    with app.app_context():
+        trekker = User(
+            name="Route Rebooking Test",
+            email="route-rebooking@example.com",
+            password_hash=generate_password_hash("password123"),
+            role="trekker",
+            status="active",
+        )
+
+        trek = Trek(
+            name="Route Rebooking Trek",
+            location="Test Location",
+            difficulty="Easy",
+            duration_days=2,
+            available_slots=4,
+            status="Open",
+        )
+
+        db.session.add_all([trekker, trek])
+        db.session.flush()
+
+        previous_booking = Booking(
+            user_id=trekker.id,
+            trek_id=trek.id,
+            status="Cancelled",
+            payment_status="Pending",
+        )
+
+        db.session.add(previous_booking)
+        db.session.commit()
+
+        trekker_id = trekker.id
+        trek_id = trek.id
+
+    with client.session_transaction() as session:
+        session["user_id"] = trekker_id
+
+    response = client.post(
+        f"/user/treks/{trek_id}/book",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+
+    with app.app_context():
+        bookings = Booking.query.filter_by(
+            user_id=trekker_id,
+            trek_id=trek_id,
+        ).all()
+
+        trek = db.session.get(Trek, trek_id)
+
+        assert len(bookings) == 2
+        assert {booking.status for booking in bookings} == {
+            "Cancelled",
+            "Booked",
+        }
+        assert trek.available_slots == 3
